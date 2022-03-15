@@ -1,3 +1,3 @@
-# lab-11-mlr-course-evals
+# lab-10-mlr-course-evals
 
-materials for lab 11
+materials for lab 10

@@ -77,8 +77,7 @@ The slope of 0.17239 means that male professors have a slightly higher
 average evaluation score than female professors by 0.17239 unit, all
 else held constant.
 
-The line corresponding to male professors is evaluation score = 3.74734
-+ 0.07416 \* beauty rating + 0.17239 = 3.91973 + 0.07416 \* beauty
+The line corresponding to male professors is evaluation score = 3.74734 + 0.07416 \* beauty rating + 0.17239 = 3.91973 + 0.07416 \* beauty
 rating.
 
 The line corresponding to female professors is evaluation score =
@@ -327,9 +326,7 @@ predictors are ethnicity, gender, age, cls_perc_eval(% students
 completed the evaluation), cls_credits (course credits), and bty_avg
 (average beauty ratings).
 
-evaluation score = 3.409832 + 0.240897 \* ethnicity + 0.182259 \* gender
-- 0.005087 \* age + 0.005107 \* cls_perc_eval + 0.532266 \* cls_credits
-+ 0.064891 \* bty_avg.
+evaluation score = 3.409832 + 0.240897 \* ethnicity + 0.182259 \* gender - 0.005087 \* age + 0.005107 \* cls_perc_eval + 0.532266 \* cls_credits + 0.064891 \* bty_avg.
 
 The slope of a categorical variable, cls_credits, is 0.532266. This
 means that professors who teach a one credit class have a higher
