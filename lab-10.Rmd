@@ -1,7 +1,7 @@
 ---
 title: "Lab 10 - Grading the professor, Pt. 2"
-author: "Insert your name here"
-date: "Insert date here"
+author: "Fanyi Zeng"
+date: "03/14/22"
 output: github_document
 ---
 
@@ -11,17 +11,114 @@ output: github_document
 library(tidyverse) 
 library(tidymodels)
 library(openintro)
+view(evals)
 ```
 
-### Exercise 1
+### Part 1: Simple linear regression
 
-Remove this text, and add your answer for Exercise 1 here.
-Add code chunks as needed.
-Don't forget to label your code chunk.
-Do not use spaces in code chunk labels.
+The linear regression model of using average beauty ratings to predict average evaluation scores could be written as the following formula: 
 
-### Exercise 2
+evaluation score = 3.88034 + 0.06664 * beauty rating
 
-...
+The adjusted R squared of the model is 0.03293, which means only 3.3% of variance in one's evaluation score is explained by one's average beauty rating.
 
-Add exercise headings as needed.
+```{r lm1}
+m_bty <- lm(score~bty_avg, evals)
+summary(m_bty)
+```
+
+The linear regression model of using average beauty ratings and gender to predict average evaluation scores could be written as the following formula: 
+
+evaluation score = 3.74734 + 0.07416 * beauty rating + 0.17239 * gender
+
+The intercept of 3.74734 means female professors with a beauty rating of zero has a baseline evaluation score of 3.74734 on average.
+
+The slope of 0.07416 means with every one unit increase in beauty rating, there will be 0.07416 unit increase in evaluation score, all else held constant. The addition of gender as another predictor increases the strength of the slope of beauty rating.
+
+The slope of 0.17239 means that male professors have a slightly higher average evaluation score than female professors by 0.17239 unit, all else held constant.
+
+The line corresponding to male professors is evaluation score = 3.74734 + 0.07416 * beauty rating  + 0.17239 = 3.91973 + 0.07416 * beauty rating. 
+
+The line corresponding to female professors is evaluation score = 3.74734 + 0.07416 * beauty rating = 3.74734 + 0.07416 * beauty rating.
+
+The adjusted R squared of the model is 0.05503, which means only 5.5% of variance in one's evaluation score is explained by one's average beauty rating and gender. This adjusted R squared is an increase from the first model with beauty rating as the sole predictor. The addition of gender explains 2.2% more variance in the evaluation score.
+
+```{r lm2}
+m_bty_gen <- lm(score~bty_avg + gender, evals)
+summary(m_bty_gen)
+```
+
+Now let's redo the model with beauty rating and rank as the predictors of evaluation score.
+
+The linear regression model of using average beauty ratings and gender to predict average evaluation scores could be written as the following formula: 
+
+evaluation score = 3.98155 + 0.06783 * beauty rating - 0.16070 * tenure track - 0.12623 * tenured
+
+The intercept of 3.98155 means a teaching professor with a beauty rating of zero will have a baseline evaluation score of 3.98155.
+
+The slope of 0.06783 means with every one unit increase in beauty rating, there will be 0.06783 unit increase in evaluation score, all else held constant.
+
+The slope of -0.16070 means that tenure track professors have a slightly lower average evaluation score than teaching professors by 0.16070 unit, all else held constant.
+
+The slope of -0.12623 means that tenured professors have a slightly lower average evaluation score than teaching professors by 0.12623 unit, all else held constant.
+
+The adjusted R squared of the model is 0.04029, which means only 4.0% of variance in one's evaluation score is explained by one's average beauty rating and rank. This adjusted R squared is an increase from the first model with beauty rating as the sole predictor. The addition of rank explains 0.7% more variance in the evaluation score.
+
+```{r lm3}
+m_bty_rank <- lm(score~bty_avg + rank, evals)
+summary(m_bty_rank)
+```
+
+### Part 3: The search for the best model
+
+I don't think number or percent of students in class who completed evaluation will affect evaluation score.
+
+Well, surprisingly, they do! Both of them are significant and positive predictors of evaluation score. If people like the class then they are more likely to fill out the evaluation forms, which makes sense. In my opinion, however, if people hate the class, they will also fill out the forms more willingly. I thought these two effects would cancel out but they didn't.
+
+```{r lm4}
+m_bty_eval <- lm(score~cls_perc_eval+cls_did_eval, evals)
+summary(m_bty_eval)
+```
+
+Okay, now I am going to fit a full model with all the predictors except for cls_did_eval because I will include cls_students and cls_perc_eval.
+
+Adjusted R squared is 0.1403. 14% variance explained by this model. To make it simpler and better, we will need to take out preditcors that are not significant.
+
+```{r full}
+m_full <- lm(score~rank + ethnicity + gender + language + age + cls_perc_eval + cls_did_eval + cls_students + cls_level + cls_profs + cls_credits + bty_avg, evals)
+summary(m_full)
+```
+
+Adjusted R squared increases to 0.1419. This is because we have fewer (necessary) predictors in the model. Age becomes nonsignificant so we will get rid of that in the next model.
+
+```{r simple}
+m_simple <- lm(score~ethnicity + gender + age + cls_perc_eval + cls_credits + bty_avg, evals)
+summary(m_simple)
+```
+
+Now the adjusted R squared is 0.1366, which decreases from the prior model. My guess is that the p value of age is only slightly larger than .05, which means it is "marginally significant" in conventional terms. Therefore, I decide to keep age in the model.
+
+```{r better}
+m_better <- lm(score~ethnicity + gender + cls_perc_eval + cls_credits + bty_avg, evals)
+summary(m_better)
+```
+
+My final model is the following:
+outcome is evaluation score, and predictors are ethnicity, gender, age, cls_perc_eval(% students completed the evaluation), cls_credits (course credits), and bty_avg (average beauty ratings).
+
+evaluation score = 3.409832 + 0.240897 * ethnicity + 0.182259 * gender - 0.005087 * age + 0.005107 * cls_perc_eval + 0.532266 * cls_credits + 0.064891 * bty_avg.
+
+The slope of a categorical variable, cls_credits, is 0.532266. This means that professors who teach a one credit class have a higher evaluation score than those who teach a multi-credit class by 0.532266 unit, all else held constant.
+
+The slope of another categorical variable, ethnicity, is 0.182259. This means that non-minority professors have a higher evaluation score by 0.182259 unit, all else held constant.
+
+The slope of a continuous variable, age, is -0.005087. This means that older professors have a lower evaluation score by -0.005087 unit, all else held constant.
+
+Based on my model, the professors with highest average evaluation scores at UT Austin will be those who are white (non-minority), male, young, attractive, teaching one-credit classes, and the majority of whose students fill out evaluation forms.
+
+Although the sample data is collected from UT Austin only, I will be comfortable with generalizing the conclusions to other higher institutions, because for one, UT Austin is a big school (so sample is larger and more diverse), and for two, I do see the same pattern in my own school (those professors being more popular among students). But, that's just my own two cents.
+
+```{r final}
+m_simple <- lm(score~ethnicity + gender + age + cls_perc_eval + cls_credits + bty_avg, evals)
+summary(m_simple)
+```
